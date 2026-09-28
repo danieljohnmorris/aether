@@ -22,6 +22,8 @@ A visual theming application for [Omarchy](https://omarchy.org). Extract colors 
 
 ### Wallpaper Tools
 - Search and download wallpapers from wallhaven.cc directly in the app
+- Search booru catalogs (safebooru, danbooru, konachan, gelbooru) by tag
+- Browse DeviantArt by tag with OAuth client credentials
 - Browse public GitHub repositories for wallpapers
 - Export favorite wallpapers as a ZIP archive with source metadata
 - Apply a blurred wallpaper variant while extraction uses the original image
@@ -134,6 +136,8 @@ From `frontend/`, run `npm ci`, `npm run check`, `npm test`, and `npm run build`
 | [Base16 Schemes](docs/base16.md) | Import community color schemes |
 | [Wallpaper Editor](docs/wallpaper-editor.md) | Image filters and presets |
 | [Wallhaven](docs/wallhaven.md) | Browse online wallpapers |
+| [Booru Catalogs](docs/booru.md) | Tag-driven illustration sources |
+| [DeviantArt](docs/deviantart.md) | Browse artwork by tag |
 | [GitHub Source](docs/github-source.md) | Browse repository wallpapers |
 | [Favorites](docs/favorites.md) | Save wallpapers and export a collection |
 | [Blueprints](docs/blueprints.md) | Save and restore themes |

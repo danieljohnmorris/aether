@@ -32,6 +32,29 @@ type localEntry struct {
 	Name string `json:"name,omitempty"`
 }
 
+// sourceEntry is the on-disk format for favorites that come from an external
+// provider (a booru catalog or DeviantArt). Path is the remote image URL.
+type sourceEntry struct {
+	Path       string `json:"path"`
+	Type       string `json:"type"`
+	ID         string `json:"id,omitempty"`
+	Site       string `json:"site,omitempty"`
+	Resolution string `json:"resolution,omitempty"`
+	ThumbURL   string `json:"thumbUrl,omitempty"`
+	PageURL    string `json:"pageUrl,omitempty"`
+	Title      string `json:"title,omitempty"`
+}
+
+// providerType returns the provider type of a stored entry, or "" when the
+// entry belongs to another format.
+func providerType(obj map[string]interface{}) string {
+	value, _ := obj["type"].(string)
+	if value == "booru" || value == "deviantart" {
+		return value
+	}
+	return ""
+}
+
 // Service manages wallpaper favorites with JSON persistence.
 type Service struct {
 	mu         sync.RWMutex
@@ -102,6 +125,14 @@ func (s *Service) GetAll() []Favorite {
 		if obj["type"] == "github" {
 			fav.Type = "github"
 			fav.Data["name"] = obj["name"]
+		} else if providerType(obj) != "" {
+			// External provider entry (booru catalog or DeviantArt).
+			fav.Type = providerType(obj)
+			for _, key := range []string{"id", "site", "resolution", "thumbUrl", "pageUrl", "title"} {
+				if value, ok := obj[key]; ok {
+					fav.Data[key] = value
+				}
+			}
 		} else if _, ok := obj["id"]; ok {
 			// Wallhaven format
 			fav.Type = "wallhaven"
@@ -229,6 +260,19 @@ func (s *Service) buildEntry(path, favType string, data map[string]interface{}) 
 	case "github":
 		name, _ := data["name"].(string)
 		return map[string]string{"path": path, "type": "github", "name": name}
+	case "booru", "deviantart":
+		// External provider hits are remote URLs, keyed by the provider's own
+		// id so the entry survives a re-search.
+		e := sourceEntry{Path: path, Type: favType}
+		if data != nil {
+			e.ID, _ = data["id"].(string)
+			e.Site, _ = data["site"].(string)
+			e.Resolution, _ = data["resolution"].(string)
+			e.ThumbURL, _ = data["thumbUrl"].(string)
+			e.PageURL, _ = data["pageUrl"].(string)
+			e.Title, _ = data["title"].(string)
+		}
+		return e
 	default:
 		return map[string]string{"path": path}
 	}

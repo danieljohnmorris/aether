@@ -10,6 +10,14 @@ type SearchParams struct {
 	Page       int    `json:"page"`
 	AtLeast    string `json:"atleast"` // "1920x1080"
 	Colors     string `json:"colors"`  // hex without #
+	Ratios     string `json:"ratios"`  // "16x9,21x9" — aspect-ratio filter
+	// Resolutions filters on exact resolutions, unlike AtLeast which only sets
+	// a floor: "3840x2160,5120x2880".
+	Resolutions string `json:"resolutions"`
+	// Seed makes sorting=random reproducible across pages.
+	Seed string `json:"seed"`
+	// TopRange narrows sorting=toplist to a window: 1d,3d,1w,1M,3M,6M,1y.
+	TopRange string `json:"topRange"`
 }
 
 // SearchResult is the top-level JSON response from the wallhaven search API.

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -250,5 +251,69 @@ func TestRemoteSourcesWithSameFilenameUseDistinctCacheEntries(t *testing.T) {
 	data, err := os.ReadFile(two)
 	if err != nil || string(data) != "/two/wall.png" {
 		t.Fatalf("wrong source bytes: %q, %v", data, err)
+	}
+}
+
+func TestSearchSendsExtendedFilters(t *testing.T) {
+	client := NewClient()
+	var query url.Values
+	client.http.Transport = roundTripFunc(func(req *http.Request) (*http.Response, error) {
+		if req.URL.Host != "wallhaven.cc" || req.URL.Path != "/api/v1/search" {
+			t.Errorf("unexpected request %s", req.URL)
+		}
+		query = req.URL.Query()
+		return &http.Response{
+			StatusCode: 200,
+			Body:       io.NopCloser(strings.NewReader(`{"data":[],"meta":{"current_page":1,"last_page":1,"total":0}}`)),
+		}, nil
+	})
+
+	_, err := client.Search(SearchParams{
+		Query:       "cyberpunk",
+		Sorting:     "toplist",
+		Order:       "desc",
+		AtLeast:     "3840x2160",
+		Ratios:      "16x9,21x9",
+		Resolutions: "3840x2160,5120x2880",
+		Seed:        "abc123",
+		TopRange:    "1M",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for name, want := range map[string]string{
+		"q":           "cyberpunk",
+		"sorting":     "toplist",
+		"atleast":     "3840x2160",
+		"ratios":      "16x9,21x9",
+		"resolutions": "3840x2160,5120x2880",
+		"seed":        "abc123",
+		"topRange":    "1M",
+	} {
+		if got := query.Get(name); got != want {
+			t.Errorf("query %s = %q, want %q", name, got, want)
+		}
+	}
+}
+
+func TestSearchOmitsExtendedFiltersWhenUnset(t *testing.T) {
+	client := NewClient()
+	var query url.Values
+	client.http.Transport = roundTripFunc(func(req *http.Request) (*http.Response, error) {
+		query = req.URL.Query()
+		return &http.Response{
+			StatusCode: 200,
+			Body:       io.NopCloser(strings.NewReader(`{"data":[],"meta":{"current_page":1,"last_page":1,"total":0}}`)),
+		}, nil
+	})
+
+	if _, err := client.Search(SearchParams{Query: "cyberpunk"}); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{"ratios", "resolutions", "seed", "topRange"} {
+		if query.Has(name) {
+			t.Errorf("unset filter %s was sent as %q", name, query.Get(name))
+		}
 	}
 }

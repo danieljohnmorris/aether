@@ -12,6 +12,10 @@
         setOrder,
         getAtleast,
         setAtleast,
+        getRatios,
+        setRatios,
+        getExactResolutions,
+        setExactResolutions,
         getColorFilter,
         setColorFilter,
         getApiKey,
@@ -49,7 +53,7 @@
         <input
             type="text"
             class="bg-bg-surface border-border text-fg-primary focus:border-border-focus min-w-[160px] flex-1 border px-2 py-1.5 text-[12px] outline-none"
-            placeholder="Search wallpapers…"
+            placeholder="Search wallpapers… (#tag, @uploader, id:123)"
             value={getQuery()}
             oninput={e => setQuery(e.currentTarget.value)}
         />
@@ -142,6 +146,36 @@
 
         <span class="bg-border h-3.5 w-px"></span>
 
+        <select
+            class="bg-bg-surface border-border text-fg-dimmed hover:text-fg-secondary focus:border-border-focus border px-1.5 py-0.5 text-[10px] outline-none"
+            value={getRatios()}
+            onchange={e => setRatios(e.currentTarget.value)}
+            title="Aspect ratio"
+        >
+            <option value="">Any ratio</option>
+            <option value="16x9">16:9</option>
+            <option value="16x10">16:10</option>
+            <option value="21x9">21:9</option>
+            <option value="32x9">32:9</option>
+        </select>
+
+        <button
+            type="button"
+            class="border px-1.5 py-0.5 text-[10px] transition-colors
+            {getAtleast() === '3840x2160' && getRatios() === '16x9'
+                ? 'text-accent border-accent bg-accent-muted'
+                : 'text-fg-dimmed border-border hover:text-fg-secondary'}"
+            onclick={() => {
+                setAtleast('3840x2160');
+                setRatios('16x9');
+            }}
+            title="4K and wider than 16:9"
+            aria-pressed={getAtleast() === '3840x2160' && getRatios() === '16x9'}
+            >4K 16:9</button
+        >
+
+        <span class="bg-border h-3.5 w-px"></span>
+
         <CardSizeToggle />
 
         <div class="ml-auto flex items-center gap-3">
@@ -192,6 +226,22 @@
                         onclick={() => setColorFilter('')}>Clear</button
                     >
                 {/if}
+            </div>
+
+            <div class="flex min-w-[200px] flex-1 items-center gap-2">
+                <span
+                    class="text-fg-dimmed shrink-0 text-[10px]"
+                    title="Exact resolutions, comma-separated"
+                >
+                    Exact res
+                </span>
+                <input
+                    type="text"
+                    class="bg-bg-surface border-border text-fg-primary focus:border-border-focus min-w-0 flex-1 border px-2 py-1 text-[11px] outline-none"
+                    placeholder="3840x2160, 5120x2880"
+                    value={getExactResolutions()}
+                    oninput={e => setExactResolutions(e.currentTarget.value)}
+                />
             </div>
 
             <div class="flex min-w-[200px] flex-1 items-center gap-2">

@@ -37,6 +37,21 @@ The key is stored locally at `~/.config/aether/wallhaven.json`.
 | `@username` | Uploader |
 | `id:123456` | Specific wallpaper |
 
+## Aspect Ratio, Exact Resolution, and Presets
+
+Beyond the minimum-resolution selector, the filter row offers:
+
+- **Ratio** — 16:9, 16:10, 21:9, 32:9. Wallhaven treats `ratios` as a filter,
+  so `16x9` excludes wider images.
+- **4K 16:9** — one click sets a 3840×2160 floor plus the 16:9 ratio and
+  re-runs the search. This is the fastest route to desktop-ready results; for
+  `cyberpunk` it currently matches over a thousand SFW wallpapers.
+- **Exact res** (advanced) — comma-separated exact resolutions such as
+  `3840x2160,5120x2880`, for when a floor is not precise enough.
+
+All three persist to `~/.config/aether/wallhaven.json` alongside the other
+filters.
+
 ## Rate Limits
 
 - **Without API key**: 45 requests/minute

@@ -90,6 +90,14 @@ func Run(args []string, templatesFS embed.FS) int {
 		return runDownloadWallhaven(args[1:])
 	case "--wallhaven-info":
 		return runWallhavenInfo(args[1:])
+	case "--search-booru":
+		return runSearchBooru(args[1:])
+	case "--booru-thumbs":
+		return runBooruThumbs(args[1:])
+	case "--search-deviantart":
+		return runSearchDeviantArt(args[1:])
+	case "--deviantart-thumbs":
+		return runDeviantArtThumbs(args[1:])
 	case "--list-wallpapers":
 		return runListWallpapers(args[1:])
 	case "--random-wallpaper":
@@ -187,6 +195,10 @@ Wallpapers:
   aether --wallhaven-thumbs <query>         Search + download small thumbnails to cache
   aether --wallhaven-download <id|url>      Download full wallpaper by id or page URL
   aether --wallhaven-info <id|url>          Show metadata for a single wallpaper
+  aether --search-booru <tags>              Search a booru catalog (metadata only)
+  aether --booru-thumbs <tags>              Search a booru + cache preview thumbnails
+  aether --search-deviantart <tag>          Browse DeviantArt by tag (metadata only)
+  aether --deviantart-thumbs <tag>          Browse DeviantArt + cache preview thumbnails
   aether --list-wallpapers [--with-previews] List local wallpapers (cached 800px previews when flag set)
   aether --random-wallpaper                 Pick random local wallpaper
 
@@ -198,7 +210,22 @@ Wallpapers:
     --sorting date_added|relevance|random|views|favorites|toplist
     --order desc|asc
     --at-least 1920x1080                    Minimum resolution
+    --resolutions 3840x2160                 Exact resolution(s), comma-separated
+    --ratios 16x9,21x9                      Aspect ratio filter
+    --seed STRING                           Reproducible sorting=random
+    --top-range 1M                          sorting=toplist window: 1d,3d,1w,1M,3M,6M,1y
     --colors HEX                            Filter by wallhaven palette color
+
+  Booru search flags (apply to --search-booru and --booru-thumbs):
+    --site safebooru|danbooru|konachan|gelbooru  Catalog to search (default safebooru)
+    --min-width N / --min-height N          Resolution filter (uses tag budget)
+    --safe                                  Restrict to the site's safe rating
+    --page N / --limit N                    Pagination (danbooru-family anonymous: 2 tags max)
+    --api-key KEY / --user-id ID            Credentials for danbooru/gelbooru
+
+  DeviantArt search flags (apply to --search-deviantart and --deviantart-thumbs):
+    --page N / --limit N                    Pagination (limit max 50)
+    --client-id ID / --client-secret SECRET OAuth client credentials (or Settings in the GUI)
 
 Favorites:
   aether --list-favorites                   List all favorites

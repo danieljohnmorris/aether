@@ -13,6 +13,8 @@ let sorting = $state('date_added');
 let order = $state('desc');
 let page = $state(1);
 let atleast = $state('1920x1080');
+let ratios = $state('');
+let exactResolutions = $state('');
 let colorFilter = $state('');
 let apiKey = $state('');
 
@@ -44,6 +46,9 @@ async function loadConfigFromFile() {
             if (config.purity) purity = config.purity;
             if (config.sorting) sorting = config.sorting;
             if (config.resolutions) atleast = config.resolutions;
+            if (config.ratios) ratios = config.ratios;
+            if (config.exactResolutions)
+                exactResolutions = config.exactResolutions;
             if (config.order) order = config.order;
         }
     } catch {}
@@ -60,6 +65,8 @@ function persist() {
                 sorting,
                 order,
                 resolutions: atleast,
+                ratios,
+                exactResolutions,
                 purityControlsEnabled: true,
             });
         })
@@ -84,6 +91,12 @@ export function getOrder(): string {
 }
 export function getAtleast(): string {
     return atleast;
+}
+export function getRatios(): string {
+    return ratios;
+}
+export function getExactResolutions(): string {
+    return exactResolutions;
 }
 export function getColorFilter(): string {
     return colorFilter;
@@ -124,6 +137,15 @@ export function setOrder(o: string): void {
 }
 export function setAtleast(a: string): void {
     atleast = a;
+    persist();
+}
+export function setRatios(r: string): void {
+    ratios = r;
+    persist();
+    search();
+}
+export function setExactResolutions(r: string): void {
+    exactResolutions = r;
     persist();
 }
 export function setColorFilter(c: string): void {
@@ -201,6 +223,10 @@ async function doSearch(append: boolean): Promise<void> {
                       order,
                       page: 1,
                       atleast,
+                      ratios,
+                      resolutions: exactResolutions,
+                      seed: '',
+                      topRange: '',
                       colors: colorFilter,
                   };
         const {SearchWallhaven} = await import('../../../wailsjs/go/main/App');

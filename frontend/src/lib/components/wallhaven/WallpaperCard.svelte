@@ -10,14 +10,34 @@
     import {openURL} from '$lib/utils/browser';
     import {observeIntersection} from '$lib/utils/intersection';
     import {isFavorite, toggleFavorite} from '$lib/stores/favorites.svelte';
+    import {loadSourcePreview} from '$lib/stores/sourcepreviews.svelte';
+    import {DownloadWallpaper, DownloadSourceWallpaper} from '../../../../wailsjs/go/main/App';
+    import type {GridWallpaper} from '$lib/types/wallpaper';
 
-    let {wallpaper, onpreview}: {wallpaper: any; onpreview: () => void} =
+    let {wallpaper, onpreview}: {wallpaper: GridWallpaper; onpreview: () => void} =
         $props();
     let isDownloading = $state(false);
+    let previewSrc = $state('');
+    let previewFailed = $state(false);
     let favoriteKey = $derived(wallpaper.path || wallpaper.id);
     let isFavorited = $derived(isFavorite(favoriteKey));
     let cardEl = $state<HTMLDivElement | null>(null);
     let inView = $state(false);
+
+    // External providers are identified by `provider`; wallhaven results carry
+    // none, so they keep hotlinking the whvn.cc CDN.
+    const providerSource = $derived(
+        wallpaper.provider && wallpaper.provider !== 'wallhaven'
+            ? wallpaper.provider
+            : ''
+    );
+    const remoteThumb = $derived(
+        wallpaper.thumbs?.large ||
+            wallpaper.thumbs?.original ||
+            wallpaper.thumbs?.small ||
+            ''
+    );
+    const imageSrc = $derived(providerSource ? previewSrc : remoteThumb);
 
     // Gate <img> on viewport so scrolled-past cards release decoded-image
     // memory.
@@ -32,17 +52,38 @@
         );
     });
 
+    // Provider previews go through the backend, which sends a user agent the
+    // CDNs accept; the remote URL is not usable from the webview.
+    $effect(() => {
+        if (!inView || !providerSource || previewSrc || previewFailed) return;
+        let cancelled = false;
+        void loadSourcePreview(providerSource, remoteThumb).then(url => {
+            if (cancelled) return;
+            if (url) previewSrc = url;
+            else previewFailed = true;
+        });
+        return () => {
+            cancelled = true;
+        };
+    });
+
+    // download resolves a card to a local file, routing remote provider hits
+    // through their own client.
+    async function download(): Promise<string> {
+        if (providerSource) {
+            return DownloadSourceWallpaper(providerSource, wallpaper.path);
+        }
+        return DownloadWallpaper(wallpaper.path);
+    }
+
     async function handleUse() {
         isDownloading = true;
         try {
-            const {DownloadWallpaper} = await import(
-                '../../../../wailsjs/go/main/App'
-            );
-            const localPath = await DownloadWallpaper(wallpaper.path);
+            const localPath = await download();
             setWallpaperPath(localPath);
             setActiveTab('editor');
             showToast('Wallpaper selected — click Extract to generate palette');
-        } catch (e: any) {
+        } catch {
             showToast('Failed to download wallpaper');
         } finally {
             isDownloading = false;
@@ -52,10 +93,13 @@
     async function handleFavorite(event: MouseEvent) {
         event.stopPropagation();
         try {
-            await toggleFavorite(favoriteKey, 'wallhaven', {
+            await toggleFavorite(favoriteKey, providerSource || 'wallhaven', {
                 id: wallpaper.id,
-                thumbUrl: wallpaper.thumbs?.small,
+                thumbUrl: remoteThumb,
                 resolution: wallpaper.resolution,
+                site: wallpaper.site,
+                pageUrl: wallpaper.pageUrl,
+                title: wallpaper.title,
             });
         } catch (err) {
             console.error('ToggleFavorite failed', err);
@@ -67,10 +111,7 @@
         event.stopPropagation();
         try {
             showToast('Downloading wallpaper...');
-            const {DownloadWallpaper} = await import(
-                '../../../../wailsjs/go/main/App'
-            );
-            const localPath = await DownloadWallpaper(wallpaper.path);
+            const localPath = await download();
             if (getAdditionalImages().includes(localPath)) {
                 showToast('Already in additional images');
                 return;
@@ -83,7 +124,7 @@
     }
 
     function handleVisit() {
-        openURL(`https://wallhaven.cc/w/${wallpaper.id}`);
+        openURL(wallpaper.pageUrl || `https://wallhaven.cc/w/${wallpaper.id}`);
     }
 
     function formatSize(bytes: number): string {
@@ -99,12 +140,10 @@
     class="bg-bg-surface border-border group relative overflow-hidden border"
 >
     <div class="bg-bg-primary aspect-video overflow-hidden">
-        {#if inView}
+        {#if inView && imageSrc}
             <img
-                src={wallpaper.thumbs?.large ||
-                    wallpaper.thumbs?.original ||
-                    wallpaper.thumbs?.small}
-                alt={wallpaper.id}
+                src={imageSrc}
+                alt={wallpaper.title || wallpaper.id}
                 class="h-full w-full object-cover"
                 loading="lazy"
             />
@@ -161,8 +200,10 @@
     <div
         class="text-fg-dimmed flex items-center justify-between px-2 py-1.5 text-[10px]"
     >
-        <span>{wallpaper.resolution}</span>
-        <span>{formatSize(wallpaper.file_size)}</span>
+        <span class="truncate" title={wallpaper.title || wallpaper.author || ''}
+            >{wallpaper.author || wallpaper.resolution}</span
+        >
+        <span>{formatSize(wallpaper.file_size ?? 0)}</span>
     </div>
 
     <!-- Hover overlay -->
@@ -197,7 +238,7 @@
             <button
                 class="pointer-events-auto px-1 transition-colors hover:text-white"
                 onclick={handleVisit}
-                title="Open wallhaven.cc page">Visit</button
+                title="Open the source page">Visit</button
             >
         </div>
     </div>

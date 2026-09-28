@@ -86,6 +86,18 @@ func (c *Client) Search(params SearchParams) (*SearchResult, error) {
 	if params.Colors != "" {
 		q.Set("colors", params.Colors)
 	}
+	if params.Ratios != "" {
+		q.Set("ratios", params.Ratios)
+	}
+	if params.Resolutions != "" {
+		q.Set("resolutions", params.Resolutions)
+	}
+	if params.Seed != "" {
+		q.Set("seed", params.Seed)
+	}
+	if params.TopRange != "" {
+		q.Set("topRange", params.TopRange)
+	}
 	if c.apiKey != "" {
 		q.Set("apikey", c.apiKey)
 	}

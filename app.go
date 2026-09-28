@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"image"
 	"log"
 	"os"
 	"path/filepath"
@@ -13,7 +14,9 @@ import (
 
 	"aether/internal/batch"
 	"aether/internal/blueprint"
+	"aether/internal/booru"
 	"aether/internal/color"
+	"aether/internal/deviantart"
 	"aether/internal/extraction"
 	"aether/internal/favexport"
 	"aether/internal/favorites"
@@ -26,6 +29,7 @@ import (
 	"aether/internal/update"
 	"aether/internal/wallhaven"
 	"aether/internal/wallpaper"
+	"aether/internal/wallpapersrc"
 	"aether/ipc"
 
 	wailsrt "github.com/wailsapp/wails/v2/pkg/runtime"
@@ -42,6 +46,8 @@ type App struct {
 	favorites    *favorites.Service
 	favExport    *favexport.Exporter
 	wallhaven    *wallhaven.Client
+	booru        *booru.Client
+	deviantart   *deviantart.Client
 	githubSource *githubsource.Client
 	batch        *batch.Processor
 	iconThemes   *icontheme.Catalog
@@ -103,6 +109,8 @@ func NewApp() *App {
 		favorites:    favorites.NewService(),
 		favExport:    favexport.New(wh),
 		wallhaven:    wh,
+		booru:        booru.NewClient(),
+		deviantart:   deviantart.NewClient(),
 		githubSource: githubsource.NewClient(),
 		batch:        batch.NewProcessor(),
 		iconThemes:   icontheme.NewCatalog(),
@@ -962,6 +970,133 @@ func (a *App) SearchWallhaven(params wallhaven.SearchParams) (*wallhaven.SearchR
 // DownloadWallpaper downloads a wallpaper from a URL. Returns local path.
 func (a *App) DownloadWallpaper(imageURL string) (string, error) {
 	return a.wallhaven.Download(imageURL)
+}
+
+// ---------------------------------------------------------------------------
+// External wallpaper sources
+// ---------------------------------------------------------------------------
+
+// SourceThumbnail is a provider preview delivered to the frontend as a data
+// URL, plus the dimensions of the full-size image.
+type SourceThumbnail struct {
+	DataURL string `json:"dataURL"`
+	Width   int    `json:"width"`
+	Height  int    `json:"height"`
+}
+
+// sourceThumbSlots bounds concurrent provider thumbnail decodes.
+var sourceThumbSlots = make(chan struct{}, 4)
+
+// SearchBooru searches a booru catalog. The site comes from the query; see
+// wallpapersrc.Site* for the supported catalogs.
+func (a *App) SearchBooru(query wallpapersrc.SearchQuery) (*wallpapersrc.SearchResult, error) {
+	return a.booru.Search(query)
+}
+
+// SetBooruCredentials sets the per-site credentials used for authenticated
+// booru requests (danbooru needs both, gelbooru requires both).
+func (a *App) SetBooruCredentials(apiKey, userID string) {
+	a.booru.SetCredentials(apiKey, userID)
+}
+
+// GetBooruConfig reads the saved booru settings from ~/.config/aether/booru.json.
+func (a *App) GetBooruConfig() map[string]interface{} {
+	return readConfigJSON("booru.json")
+}
+
+// SaveBooruConfig writes booru settings to ~/.config/aether/booru.json.
+func (a *App) SaveBooruConfig(config map[string]interface{}) error {
+	return writeConfigJSON("booru.json", config)
+}
+
+// SearchDeviantArt browses DeviantArt by tag.
+func (a *App) SearchDeviantArt(query wallpapersrc.SearchQuery) (*wallpapersrc.SearchResult, error) {
+	return a.deviantart.Search(query)
+}
+
+// SetDeviantArtCredentials sets the OAuth client credentials Aether exchanges
+// for a client-credentials token.
+func (a *App) SetDeviantArtCredentials(clientID, clientSecret string) {
+	a.deviantart.SetCredentials(clientID, clientSecret)
+}
+
+// HasDeviantArtCredentials reports whether DeviantArt searches can run.
+func (a *App) HasDeviantArtCredentials() bool {
+	return a.deviantart.HasCredentials()
+}
+
+// GetDeviantArtConfig reads the saved DeviantArt settings.
+func (a *App) GetDeviantArtConfig() map[string]interface{} {
+	return readConfigJSON("deviantart.json")
+}
+
+// SaveDeviantArtConfig writes DeviantArt settings to ~/.config/aether/deviantart.json.
+func (a *App) SaveDeviantArtConfig(config map[string]interface{}) error {
+	return writeConfigJSON("deviantart.json", config)
+}
+
+// GetSourceThumbnail downloads and caches a provider preview and returns it as
+// a data URL, so the webview never hotlinks a provider CDN.
+func (a *App) GetSourceThumbnail(source, thumbURL string) (*SourceThumbnail, error) {
+	path, err := a.sourceThumbPath(source, thumbURL)
+	if err != nil {
+		return nil, err
+	}
+
+	sourceThumbSlots <- struct{}{}
+	defer func() { <-sourceThumbSlots }()
+
+	if err := wallpaper.ValidateImageFile(path); err != nil {
+		return nil, err
+	}
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, fmt.Errorf("open thumbnail: %w", err)
+	}
+	config, _, decodeErr := image.DecodeConfig(file)
+	_ = file.Close()
+	if decodeErr != nil {
+		return nil, fmt.Errorf("decode thumbnail header: %w", decodeErr)
+	}
+
+	thumb, err := wallpaper.GetThumbnail(path)
+	if err != nil {
+		return nil, err
+	}
+	data, err := os.ReadFile(thumb)
+	if err != nil {
+		return nil, fmt.Errorf("read thumbnail: %w", err)
+	}
+
+	return &SourceThumbnail{
+		DataURL: "data:image/png;base64," + base64.StdEncoding.EncodeToString(data),
+		Width:   config.Width,
+		Height:  config.Height,
+	}, nil
+}
+
+// DownloadSourceWallpaper downloads a provider result at full size.
+func (a *App) DownloadSourceWallpaper(source, imageURL string) (string, error) {
+	switch source {
+	case wallpapersrc.SourceBooru:
+		return a.booru.Download(imageURL)
+	case wallpapersrc.SourceDeviantArt:
+		return a.deviantart.Download(imageURL)
+	default:
+		return "", fmt.Errorf("unknown wallpaper source %q", source)
+	}
+}
+
+// sourceThumbPath caches a provider thumbnail and returns its local path.
+func (a *App) sourceThumbPath(source, thumbURL string) (string, error) {
+	switch source {
+	case wallpapersrc.SourceBooru:
+		return a.booru.DownloadThumb(thumbURL)
+	case wallpapersrc.SourceDeviantArt:
+		return a.deviantart.DownloadThumb(thumbURL)
+	default:
+		return "", fmt.Errorf("unknown wallpaper source %q", source)
+	}
 }
 
 // ---------------------------------------------------------------------------

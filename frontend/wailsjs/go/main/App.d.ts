@@ -9,6 +9,7 @@ import {icontheme} from '../models';
 import {omarchy} from '../models';
 import {ipc} from '../models';
 import {wallpaper} from '../models';
+import {wallpapersrc} from '../models';
 import {wallhaven} from '../models';
 
 export function AdjustPaletteColors(arg1:Array<string>,arg2:color.Adjustments):Promise<Array<string>>;
@@ -45,6 +46,8 @@ export function ContrastRatio(arg1:string,arg2:string):Promise<number>;
 
 export function DeleteBlueprint(arg1:string):Promise<void>;
 
+export function DownloadSourceWallpaper(arg1:string,arg2:string):Promise<string>;
+
 export function DownloadWallpaper(arg1:string):Promise<string>;
 
 export function ExportFavorites(arg1:main.ExportFavoritesRequest):Promise<string>;
@@ -58,6 +61,10 @@ export function ExtractColorsFromImages(arg1:Array<string>,arg2:boolean,arg3:str
 export function GenerateGradient(arg1:string,arg2:string):Promise<any>;
 
 export function GeneratePaletteFromColor(arg1:string):Promise<any>;
+
+export function GetBooruConfig():Promise<Record<string, any>>;
+
+export function GetDeviantArtConfig():Promise<Record<string, any>>;
 
 export function GetFavorites():Promise<Array<favorites.Favorite>>;
 
@@ -79,6 +86,8 @@ export function GetReleaseStatus(arg1:string):Promise<Record<string, any>>;
 
 export function GetSettings():Promise<Record<string, any>>;
 
+export function GetSourceThumbnail(arg1:string,arg2:string):Promise<main.SourceThumbnail>;
+
 export function GetTemplateColors():Promise<Record<string, Array<string>>>;
 
 export function GetThemeColors():Promise<Record<string, string>>;
@@ -92,6 +101,8 @@ export function GetWallpaperTags():Promise<Record<string, any>>;
 export function HandleDroppedFiles(arg1:Array<string>):Promise<string>;
 
 export function HandleIPC(arg1:ipc.Request):Promise<ipc.Response>;
+
+export function HasDeviantArtCredentials():Promise<boolean>;
 
 export function ImportFileDialog(arg1:string):Promise<main.ImportResult>;
 
@@ -131,7 +142,11 @@ export function SaveAndApplyTheme(arg1:main.SaveAndApplyThemeRequest):Promise<th
 
 export function SaveBlueprint(arg1:main.SaveBlueprintRequest):Promise<void>;
 
+export function SaveBooruConfig(arg1:Record<string, any>):Promise<void>;
+
 export function SaveDataURLToFile(arg1:string,arg2:string):Promise<string>;
+
+export function SaveDeviantArtConfig(arg1:Record<string, any>):Promise<void>;
 
 export function SaveSettings(arg1:Record<string, any>):Promise<void>;
 
@@ -141,7 +156,15 @@ export function SaveWallpaperTags(arg1:Record<string, any>):Promise<void>;
 
 export function ScanLocalWallpapers():Promise<Array<wallpaper.WallpaperInfo>>;
 
+export function SearchBooru(arg1:wallpapersrc.SearchQuery):Promise<wallpapersrc.SearchResult>;
+
+export function SearchDeviantArt(arg1:wallpapersrc.SearchQuery):Promise<wallpapersrc.SearchResult>;
+
 export function SearchWallhaven(arg1:wallhaven.SearchParams):Promise<wallhaven.SearchResult>;
+
+export function SetBooruCredentials(arg1:string,arg2:string):Promise<void>;
+
+export function SetDeviantArtCredentials(arg1:string,arg2:string):Promise<void>;
 
 export function SetExtractionMode(arg1:string):Promise<void>;
 

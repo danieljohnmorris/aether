@@ -601,6 +601,22 @@ export namespace main {
 		    return a;
 		}
 	}
+	export class SourceThumbnail {
+	    dataURL: string;
+	    width: number;
+	    height: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new SourceThumbnail(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.dataURL = source["dataURL"];
+	        this.width = source["width"];
+	        this.height = source["height"];
+	    }
+	}
 	export class SyncStateRequest {
 	    palette: string[];
 	    wallpaperPath: string;
@@ -924,6 +940,10 @@ export namespace wallhaven {
 	    page: number;
 	    atleast: string;
 	    colors: string;
+	    ratios: string;
+	    resolutions: string;
+	    seed: string;
+	    topRange: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new SearchParams(source);
@@ -939,6 +959,10 @@ export namespace wallhaven {
 	        this.page = source["page"];
 	        this.atleast = source["atleast"];
 	        this.colors = source["colors"];
+	        this.ratios = source["ratios"];
+	        this.resolutions = source["resolutions"];
+	        this.seed = source["seed"];
+	        this.topRange = source["topRange"];
 	    }
 	}
 	export class WallpaperInfo {
@@ -1021,6 +1045,127 @@ export namespace wallpaper {
 	        this.size = source["size"];
 	        this.modTime = source["modTime"];
 	    }
+	}
+
+}
+
+export namespace wallpapersrc {
+	
+	export class Hit {
+	    id: string;
+	    source: string;
+	    site: string;
+	    title?: string;
+	    author?: string;
+	    pageUrl: string;
+	    imageUrl: string;
+	    previewUrl: string;
+	    width: number;
+	    height: number;
+	    resolution: string;
+	    fileSize: number;
+	    rating?: string;
+	    tags?: string[];
+	
+	    static createFrom(source: any = {}) {
+	        return new Hit(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.source = source["source"];
+	        this.site = source["site"];
+	        this.title = source["title"];
+	        this.author = source["author"];
+	        this.pageUrl = source["pageUrl"];
+	        this.imageUrl = source["imageUrl"];
+	        this.previewUrl = source["previewUrl"];
+	        this.width = source["width"];
+	        this.height = source["height"];
+	        this.resolution = source["resolution"];
+	        this.fileSize = source["fileSize"];
+	        this.rating = source["rating"];
+	        this.tags = source["tags"];
+	    }
+	}
+	export class PageMeta {
+	    current_page: number;
+	    last_page: number;
+	    total: number;
+	    per_page: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new PageMeta(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.current_page = source["current_page"];
+	        this.last_page = source["last_page"];
+	        this.total = source["total"];
+	        this.per_page = source["per_page"];
+	    }
+	}
+	export class SearchQuery {
+	    query: string;
+	    site: string;
+	    page: number;
+	    limit: number;
+	    minWidth: number;
+	    minHeight: number;
+	    safeOnly: boolean;
+	    apiKey?: string;
+	    userID?: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new SearchQuery(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.query = source["query"];
+	        this.site = source["site"];
+	        this.page = source["page"];
+	        this.limit = source["limit"];
+	        this.minWidth = source["minWidth"];
+	        this.minHeight = source["minHeight"];
+	        this.safeOnly = source["safeOnly"];
+	        this.apiKey = source["apiKey"];
+	        this.userID = source["userID"];
+	    }
+	}
+	export class SearchResult {
+	    data: Hit[];
+	    meta: PageMeta;
+	
+	    static createFrom(source: any = {}) {
+	        return new SearchResult(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.data = this.convertValues(source["data"], Hit);
+	        this.meta = this.convertValues(source["meta"], PageMeta);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
 	}
 
 }

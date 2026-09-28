@@ -64,6 +64,20 @@ export function buildCommands(): Command[] {
             run: () => setActiveTab('github'),
         },
         {
+            id: 'nav.booru',
+            label: 'Go to Booru',
+            category: 'Navigate',
+            keywords: 'booru safebooru danbooru konachan gelbooru illustration tags',
+            run: () => setActiveTab('booru'),
+        },
+        {
+            id: 'nav.deviantart',
+            label: 'Go to DeviantArt',
+            category: 'Navigate',
+            keywords: 'deviantart art tag browse',
+            run: () => setActiveTab('deviantart'),
+        },
+        {
             id: 'nav.local',
             label: 'Go to Local',
             category: 'Navigate',

@@ -70,6 +70,10 @@ export function DeleteBlueprint(arg1) {
   return window['go']['main']['App']['DeleteBlueprint'](arg1);
 }
 
+export function DownloadSourceWallpaper(arg1, arg2) {
+  return window['go']['main']['App']['DownloadSourceWallpaper'](arg1, arg2);
+}
+
 export function DownloadWallpaper(arg1) {
   return window['go']['main']['App']['DownloadWallpaper'](arg1);
 }
@@ -96,6 +100,14 @@ export function GenerateGradient(arg1, arg2) {
 
 export function GeneratePaletteFromColor(arg1) {
   return window['go']['main']['App']['GeneratePaletteFromColor'](arg1);
+}
+
+export function GetBooruConfig() {
+  return window['go']['main']['App']['GetBooruConfig']();
+}
+
+export function GetDeviantArtConfig() {
+  return window['go']['main']['App']['GetDeviantArtConfig']();
 }
 
 export function GetFavorites() {
@@ -138,6 +150,10 @@ export function GetSettings() {
   return window['go']['main']['App']['GetSettings']();
 }
 
+export function GetSourceThumbnail(arg1, arg2) {
+  return window['go']['main']['App']['GetSourceThumbnail'](arg1, arg2);
+}
+
 export function GetTemplateColors() {
   return window['go']['main']['App']['GetTemplateColors']();
 }
@@ -164,6 +180,10 @@ export function HandleDroppedFiles(arg1) {
 
 export function HandleIPC(arg1) {
   return window['go']['main']['App']['HandleIPC'](arg1);
+}
+
+export function HasDeviantArtCredentials() {
+  return window['go']['main']['App']['HasDeviantArtCredentials']();
 }
 
 export function ImportFileDialog(arg1) {
@@ -242,8 +262,16 @@ export function SaveBlueprint(arg1) {
   return window['go']['main']['App']['SaveBlueprint'](arg1);
 }
 
+export function SaveBooruConfig(arg1) {
+  return window['go']['main']['App']['SaveBooruConfig'](arg1);
+}
+
 export function SaveDataURLToFile(arg1, arg2) {
   return window['go']['main']['App']['SaveDataURLToFile'](arg1, arg2);
+}
+
+export function SaveDeviantArtConfig(arg1) {
+  return window['go']['main']['App']['SaveDeviantArtConfig'](arg1);
 }
 
 export function SaveSettings(arg1) {
@@ -262,8 +290,24 @@ export function ScanLocalWallpapers() {
   return window['go']['main']['App']['ScanLocalWallpapers']();
 }
 
+export function SearchBooru(arg1) {
+  return window['go']['main']['App']['SearchBooru'](arg1);
+}
+
+export function SearchDeviantArt(arg1) {
+  return window['go']['main']['App']['SearchDeviantArt'](arg1);
+}
+
 export function SearchWallhaven(arg1) {
   return window['go']['main']['App']['SearchWallhaven'](arg1);
+}
+
+export function SetBooruCredentials(arg1, arg2) {
+  return window['go']['main']['App']['SetBooruCredentials'](arg1, arg2);
+}
+
+export function SetDeviantArtCredentials(arg1, arg2) {
+  return window['go']['main']['App']['SetDeviantArtCredentials'](arg1, arg2);
 }
 
 export function SetExtractionMode(arg1) {

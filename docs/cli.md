@@ -398,7 +398,63 @@ aether --search-wallhaven "mountains" --sorting relevance --purity 100 --page 2 
 | `--order` | Sort order: desc, asc |
 | `--page` | Page number |
 | `--at-least` | Minimum resolution (e.g. "1920x1080") |
+| `--resolutions` | Exact resolution(s), comma-separated (e.g. "3840x2160,5120x2880") |
+| `--ratios` | Aspect ratio(s), comma-separated (e.g. "16x9,21x9") |
+| `--seed` | Reproducible seed for `--sorting random` |
+| `--top-range` | `--sorting toplist` window: 1d, 3d, 1w, 1M, 3M, 6M, 1y |
 | `--colors` | Filter by color hex (without #) |
+
+The same flags apply to `--wallhaven-thumbs`. To target 4K wallpapers by
+default:
+
+```bash
+aether --wallhaven-thumbs "cyberpunk" --at-least 3840x2160 --ratios 16x9 --pages 2
+```
+
+### Search Booru Catalogs
+
+Search a Danbooru-family catalog (safebooru, danbooru, konachan, gelbooru):
+
+```bash
+aether --search-booru "cyberpunk" --site safebooru --min-width 3840
+aether --booru-thumbs "cyberpunk" --site konachan --limit 24 --json
+```
+
+**Options:**
+
+| Option | Description |
+|--------|-------------|
+| `--site` | safebooru (default), danbooru, konachan, gelbooru |
+| `--min-width` / `--min-height` | Resolution filter, sent as tag filters |
+| `--safe` | Restrict to the site's safe rating |
+| `--page` / `--limit` | Pagination (limit max 100; danbooru-family anonymous: 2 tags total) |
+| `--api-key` / `--user-id` | Credentials for danbooru and gelbooru |
+
+Credentials default to `~/.config/aether/booru.json` when the flags are omitted.
+Safebooru and danbooru allow only two tags without credentials, and the
+resolution and rating filters count against that budget, so a query plus
+`--min-width` plus `--safe` is already one tag too many.
+
+### Search DeviantArt
+
+Browse DeviantArt by tag:
+
+```bash
+aether --search-deviantart cyberpunk --limit 24
+aether --deviantart-thumbs cyberpunk --limit 48 --json
+```
+
+**Options:**
+
+| Option | Description |
+|--------|-------------|
+| `--page` | Page number (offset is derived from it) |
+| `--limit` | Results per page, max 50 |
+| `--client-id` / `--client-secret` | OAuth client credentials; default to `~/.config/aether/deviantart.json` |
+
+Aether exchanges the credentials for a client-credentials token (scope
+`browse`) and caches it for the process, so a batch of calls performs one token
+exchange.
 
 ### List Wallpapers
 

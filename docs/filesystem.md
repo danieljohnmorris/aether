@@ -18,7 +18,9 @@ User settings and persistent data.
 │   └── *.conf               # Processed config files
 ├── favorites.json           # Favorited wallpapers list
 ├── settings.json            # App preferences
-└── wallhaven.json           # Wallhaven API key and settings
+├── booru.json               # Booru catalog settings and credentials
+├── deviantart.json          # DeviantArt OAuth client credentials
+└── wallhaven.json           # Wallhaven API key, filters, and settings
 ```
 
 ### Key Files
@@ -29,6 +31,8 @@ User settings and persistent data.
 | `settings.json` | Light mode, template toggles, adjustments |
 | `wallhaven.json` | API key for NSFW content access |
 | `favorites.json` | List of favorited wallpaper paths/URLs |
+| `booru.json` | Booru catalog, resolution filter, and credentials |
+| `deviantart.json` | DeviantArt OAuth client ID and secret |
 
 ## Cache (`~/.cache/aether/`)
 
@@ -38,6 +42,8 @@ Temporary and regeneratable files.
 ~/.cache/aether/
 ├── thumbnails/              # Local wallpaper thumbnails
 ├── wallhaven-thumbs/        # Wallhaven preview images
+├── booru-thumbs/            # Booru catalog preview images
+├── deviantart-thumbs/       # DeviantArt preview images
 ├── color-cache/             # Extracted color palettes
 └── processed-wallpaper-*.jpg  # Edited wallpapers
 ```

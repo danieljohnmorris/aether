@@ -6,6 +6,8 @@
     import TargetAppsStrip from '$lib/components/layout/TargetAppsStrip.svelte';
     import ThemeEditor from '$lib/components/editor/ThemeEditor.svelte';
     import WallhavenBrowser from '$lib/components/wallhaven/WallhavenBrowser.svelte';
+    import BooruBrowser from '$lib/components/booru/BooruBrowser.svelte';
+    import DeviantArtBrowser from '$lib/components/deviantart/DeviantArtBrowser.svelte';
     import GitHubBrowser from '$lib/components/github/GitHubBrowser.svelte';
     import LocalBrowser from '$lib/components/local/LocalBrowser.svelte';
     import FavoritesView from '$lib/components/favorites/FavoritesView.svelte';
@@ -47,6 +49,8 @@
     const VALID_TABS: readonly Tab[] = [
         'editor',
         'wallhaven',
+        'booru',
+        'deviantart',
         'github',
         'local',
         'favorites',
@@ -617,6 +621,10 @@
                     <ThemeEditor />
                 {:else if activeTab === 'wallhaven'}
                     <WallhavenBrowser />
+                {:else if activeTab === 'booru'}
+                    <BooruBrowser />
+                {:else if activeTab === 'deviantart'}
+                    <DeviantArtBrowser />
                 {:else if activeTab === 'github'}
                     <GitHubBrowser />
                 {:else if activeTab === 'local'}

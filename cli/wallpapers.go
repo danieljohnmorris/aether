@@ -14,13 +14,7 @@ import (
 
 func runSearchWallhaven(args []string) int {
 	jsonOut, args := stripJSON(args)
-	categories, args := parseFlag(args, "--categories")
-	purity, args := parseFlag(args, "--purity")
-	sorting, args := parseFlag(args, "--sorting")
-	order, args := parseFlag(args, "--order")
-	pageStr, args := parseFlag(args, "--page")
-	atLeast, args := parseFlag(args, "--at-least")
-	colors, args := parseFlag(args, "--colors")
+	params, args := wallhavenSearchParams(args)
 
 	if len(args) == 0 {
 		msg := "Usage: aether --search-wallhaven <query> [--categories 111] [--purity 100] [--sorting relevance] [--page 1]"
@@ -31,32 +25,7 @@ func runSearchWallhaven(args []string) int {
 		return 1
 	}
 
-	params := wallhaven.SearchParams{
-		Query: args[0],
-	}
-	if categories != "" {
-		params.Categories = categories
-	}
-	if purity != "" {
-		params.Purity = purity
-	}
-	if sorting != "" {
-		params.Sorting = sorting
-	}
-	if order != "" {
-		params.Order = order
-	}
-	if pageStr != "" {
-		if v, err := strconv.Atoi(pageStr); err == nil {
-			params.Page = v
-		}
-	}
-	if atLeast != "" {
-		params.AtLeast = atLeast
-	}
-	if colors != "" {
-		params.Colors = colors
-	}
+	params.Query = args[0]
 
 	client := wallhaven.NewClient()
 	result, err := client.Search(params)
@@ -92,6 +61,10 @@ func wallhavenSearchParams(args []string) (wallhaven.SearchParams, []string) {
 	pageStr, args := parseFlag(args, "--page")
 	atLeast, args := parseFlag(args, "--at-least")
 	colorsFlag, args := parseFlag(args, "--colors")
+	ratios, args := parseFlag(args, "--ratios")
+	resolutions, args := parseFlag(args, "--resolutions")
+	seed, args := parseFlag(args, "--seed")
+	topRange, args := parseFlag(args, "--top-range")
 
 	params := wallhaven.SearchParams{}
 	if categories != "" {
@@ -116,6 +89,18 @@ func wallhavenSearchParams(args []string) (wallhaven.SearchParams, []string) {
 	}
 	if colorsFlag != "" {
 		params.Colors = colorsFlag
+	}
+	if ratios != "" {
+		params.Ratios = ratios
+	}
+	if resolutions != "" {
+		params.Resolutions = resolutions
+	}
+	if seed != "" {
+		params.Seed = seed
+	}
+	if topRange != "" {
+		params.TopRange = topRange
 	}
 
 	return params, args
